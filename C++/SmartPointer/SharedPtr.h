@@ -156,5 +156,97 @@ private:
 
 // Attempt 3:
 
+template<typename T>
+class SharedPtr
+{
+public:
+    SharedPtr(T* p = nullptr)
+    {
+        pRef = new Reference(p);
+    }
+
+    ~SharedPtr()
+    {
+        if (pRef != nullptr)
+        {
+            if (--pRef->referenceCount == 0)
+            {
+                delete pRef;
+                pRef = nullptr;
+            }
+        }
+    }
+
+    // make copying SharedPtr point to same resource.
+    SharedPtr(SharedPtr& sp) :pRef(sp.pRef)
+    {
+        pRef->referenceCount++;
+    }
+
+    SharedPtr<T>& operator=(SharedPtr<T>& sp)
+    {
+        if (*this == sp)
+        {
+            return *this;
+        }
+
+        pRef = sp->pRef;
+        pRef->referenceCount++;
+        return *this;
+    }
+
+    T& operator*()
+    {
+        T* raw = pRef->rawPointer;
+
+        if (raw == nullptr)
+            throw raw;
+        return *raw;
+    }
+
+    T* operator->()
+    {
+        T* raw = pRef->rawPointer;
+
+        if (raw == nullptr)
+            throw raw;
+        return raw;
+    }
+
+    // return raw pointer.
+    T* get() const
+    {
+        return pRef->rawPointer;
+    }
+
+    // releases the ownership of the managed object, if any. 
+    void reset()
+    {
+        pRef->referenceCount--;
+        // make this shared ptr own nothing.
+        pRef = nullptr;
+        // should we handle raw pointer here? No. raw pointer's destruction relies on whether any managing shared ptr own it.
+        // one shared ptr reset does not there is no more other shared ptr own it.
+    }
+
+private:
+    struct Reference
+    {
+        T* rawPointer;
+        int referenceCount;
+
+        Reference(T* p) :rawPointer(p), referenceCount(1)
+        {
+        };
+
+        ~Reference()
+        {
+            delete rawPointer;
+            rawPointer = nullptr;
+        };
+    };
+
+    Reference* pRef; // hold the resource and its reference count.
+};
 
 #endif

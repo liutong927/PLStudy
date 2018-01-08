@@ -62,12 +62,14 @@ void SharedPtr_Test()
     SharedPtr<int> spp(sp);
     SharedPtr<int> sppp = spp;
     sppp.reset();
+    cout << *(spp.get()) <<endl;
 
     //int* pp = new int(5);
     //std::shared_ptr<int> sp(pp);
     //std::shared_ptr<int> spother(pp); // anther shared ptr, ref count=1.
     //std::shared_ptr<int> spp(sp);
     //std::shared_ptr<int> sppp = spp;
+    //cout << *(sppp.get());
     //sppp.reset();
 }
 
