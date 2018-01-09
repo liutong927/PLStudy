@@ -64,6 +64,12 @@ void SharedPtr_Test()
     sppp.reset();
     cout << *(spp.get()) <<endl;
 
+    // copy operator
+    SharedPtr<int> a(new int(6));
+    SharedPtr<int> b;
+    b = a;
+
+
     //int* pp = new int(5);
     //std::shared_ptr<int> sp(pp);
     //std::shared_ptr<int> spother(pp); // anther shared ptr, ref count=1.
@@ -73,9 +79,30 @@ void SharedPtr_Test()
     //sppp.reset();
 }
 
+
+struct A
+{
+    //std::shared_ptr<A> ptr;
+    SharedPtr<A> ptr;
+};
+
+void CyclicReference_Test()
+{
+    //std::shared_ptr<A> p1 = std::make_shared<A>();
+    //std::shared_ptr<A> p2 = std::make_shared<A>();
+
+    SharedPtr<A> p1(new A);// ref count=1
+    SharedPtr<A> p2(new A);// ref count=1
+
+    p1->ptr = p2;// ref count=2
+    p2->ptr = p1;// ref count=2
+    // p1,p2 both decrease to 1 so never delete the resource.
+}
+
 int main()
 {
     AutoPtr_Test();
     SharedPtr_Test();
+    CyclicReference_Test();
 }
 

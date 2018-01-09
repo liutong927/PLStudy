@@ -185,12 +185,13 @@ public:
 
     SharedPtr<T>& operator=(SharedPtr<T>& sp)
     {
-        if (*this == sp)
+        // check for self-assignment.
+        if (this == &sp)
         {
             return *this;
         }
 
-        pRef = sp->pRef;
+        pRef = sp.pRef;
         pRef->referenceCount++;
         return *this;
     }
