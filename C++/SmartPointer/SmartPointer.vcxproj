@@ -67,6 +67,7 @@
   <ItemGroup>
     <ClInclude Include="AutoPtr.h" />
     <ClInclude Include="SharedPtr.h" />
+    <ClInclude Include="WeakPtr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test.cpp" />
