@@ -4,6 +4,7 @@
 
 #include "AutoPtr.h"
 #include "SharedPtr.h"
+#include "WeakPtr.h"
 #include <memory>
 #include <iostream>
 
@@ -79,11 +80,46 @@ void SharedPtr_Test()
     //sppp.reset();
 }
 
+void WeakPtr_Test()
+{
+    /*
+    int* pp = new int(5);
+    // weak_ptr cannot contruct from raw pointer.
+    // std::weak_ptr<int> sp(pp);
+    std::shared_ptr<int> sp = std::make_shared<int>(5);
+    std::weak_ptr<int> wp(sp);
+    //std::weak_ptr<int> wp2(wp);
+    std::shared_ptr<int> spFromWeak = wp.lock();
+    //wp.reset();
+    */
 
+    int* pp = new int(5);
+    SharedPtr<int> sp(pp);
+    WeakPtr<int> wp(sp);
+
+}
+
+struct B;
 struct A
 {
+    ~A()
+    {
+        cout << "destroy A." << endl;
+    }
     //std::shared_ptr<A> ptr;
-    SharedPtr<A> ptr;
+    // SharedPtr<B> ptr;
+    std::weak_ptr<B> ptr;
+};
+
+struct B
+{
+    ~B()
+    {
+        cout << "destroy B." << endl;
+    }
+    //std::shared_ptr<A> ptr;
+    // SharedPtr<A> ptr;
+    std::weak_ptr<A> ptr;
 };
 
 void CyclicReference_Test()
@@ -91,12 +127,19 @@ void CyclicReference_Test()
     //std::shared_ptr<A> p1 = std::make_shared<A>();
     //std::shared_ptr<A> p2 = std::make_shared<A>();
 
-    SharedPtr<A> p1(new A);// ref count=1
-    SharedPtr<A> p2(new A);// ref count=1
+    //SharedPtr<A> p1(new A);// ref count=1
+    //SharedPtr<B> p2(new B);// ref count=1
 
-    p1->ptr = p2;// ref count=2
-    p2->ptr = p1;// ref count=2
+    //p1->ptr = p2;// ref count=2
+    //p2->ptr = p1;// ref count=2
     // p1,p2 both decrease to 1 so never delete the resource.
+
+    // using weak_ptr in A and B to solve cycle reference.
+    std::shared_ptr<A> sp1 = std::make_shared<A>();
+    std::shared_ptr<B> sp2 = std::make_shared<B>();
+
+    sp1->ptr = sp2;// p2 has 1 strong reference, 1 weak reference
+    sp2->ptr = sp1;// p1 has 1 stong ref, 1 weak ref.
 }
 
 int main()
@@ -104,5 +147,6 @@ int main()
     AutoPtr_Test();
     SharedPtr_Test();
     CyclicReference_Test();
+    WeakPtr_Test();
 }
 

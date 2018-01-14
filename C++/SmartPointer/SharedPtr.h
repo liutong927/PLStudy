@@ -5,6 +5,9 @@
 #ifndef SHAREDPTR_H
 #define SHAREDPTR_H
 
+#include "WeakPtr.h"
+template<typename T>
+class WeakPtr;
 // multiple SharedPtr can share/own same pointer which avoid redundant storage
 // of same resource, destroy pointer when there is not any SharedPtr own it.
 // reference counting is used to count the owning number.
@@ -155,7 +158,9 @@ private:
 */
 
 // Attempt 3:
-
+// shared ptr cannot handle cyclic reference issue by itself, has to introduce
+// weak ptr to handle this which will add a new reference count in the control block.
+/*
 template<typename T>
 class SharedPtr
 {
@@ -237,6 +242,110 @@ private:
         int referenceCount;
 
         Reference(T* p) :rawPointer(p), referenceCount(1)
+        {
+        };
+
+        ~Reference()
+        {
+            delete rawPointer;
+            rawPointer = nullptr;
+        };
+    };
+
+    Reference* pRef; // hold the resource and its reference count.
+};
+*/
+
+// Attempt 4
+
+template<typename T>
+class SharedPtr
+{
+public:
+    SharedPtr(T* p = nullptr)
+    {
+        pRef = new Reference(p);
+    }
+
+    ~SharedPtr()
+    {
+        if (pRef != nullptr)
+        {
+            if (--pRef->strongRefCount == 0)
+            {
+                delete pRef;
+                pRef = nullptr;
+            }
+        }
+    }
+
+    // make copying SharedPtr point to same resource.
+    SharedPtr(SharedPtr& sp) :pRef(sp.pRef)
+    {
+        pRef->strongRefCount++;
+    }
+
+    // SharedPtr should be able to contruct from WeakPtr.
+    SharedPtr(WeakPtr<T>& wp) :pRef(wp.pRef)
+    {
+        pRef->strongRefCount++;
+    }
+
+    SharedPtr<T>& operator=(SharedPtr<T>& sp)
+    {
+        // check for self-assignment.
+        if (this == &sp)
+        {
+            return *this;
+        }
+
+        pRef = sp.pRef;
+        pRef->strongRefCount++;
+        return *this;
+    }
+
+    T& operator*()
+    {
+        T* raw = pRef->rawPointer;
+
+        if (raw == nullptr)
+            throw raw;
+        return *raw;
+    }
+
+    T* operator->()
+    {
+        T* raw = pRef->rawPointer;
+
+        if (raw == nullptr)
+            throw raw;
+        return raw;
+    }
+
+    // return raw pointer.
+    T* get() const
+    {
+        return pRef->rawPointer;
+    }
+
+    // releases the ownership of the managed object, if any. 
+    void reset()
+    {
+        pRef->strongRefCount--;
+        // make this shared ptr own nothing.
+        pRef = nullptr;
+        // should we handle raw pointer here? No. raw pointer's destruction relies on whether any managing shared ptr own it.
+        // one shared ptr reset does not there is no more other shared ptr own it.
+    }
+
+private:
+    struct Reference
+    {
+        T* rawPointer;
+        int strongRefCount;
+        int weakRefCount;
+
+        Reference(T* p) :rawPointer(p), strongRefCount(1), weakRefCount(0)
         {
         };
 
