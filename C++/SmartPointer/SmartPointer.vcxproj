@@ -66,6 +66,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AutoPtr.h" />
+    <ClInclude Include="BasePtr.h" />
     <ClInclude Include="SharedPtr.h" />
     <ClInclude Include="WeakPtr.h" />
   </ItemGroup>

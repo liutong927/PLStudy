@@ -5,12 +5,19 @@
 #ifndef WEAKPTR_H
 #define WEAKPTR_H
 
+#include "BasePtr.h"
 #include "SharedPtr.h"
+
 template<typename T>
 class SharedPtr;
+
 // non-owning observer to a shared_ptr-managed object that can be promoted temporarily to shared_ptr.
 // weak ptr cannot obtain managed resource directly(not overload * and -> operator), has to promote
 // to shared ptr to obtain resource.
+
+// Attempt 1:
+// need to inherit from BasePtr to use common reference object.
+/*
 template<typename T>
 class WeakPtr
 {
@@ -23,7 +30,7 @@ public:
     {
     }
 
-    template<class T> WeakPtr(SharedPtr<T>& sp) :pRef(sp.pRef)
+    template<class T> WeakPtr(SharedPtr<T>& sp)
     {
         pRef->weakRefCount++;
     }
@@ -93,6 +100,74 @@ private:
     };
 
     Reference* pRef; // hold the resource and its reference count.
+};
+*/
+
+// Attempt 2:
+// use BasePtr for WeakPtr.
+template<typename T>
+class WeakPtr: public BasePtr<T>
+{
+public:
+    WeakPtr()
+    {
+    }
+
+    ~WeakPtr()
+    {
+    }
+
+    WeakPtr(SharedPtr<T>& sp)
+    {
+        this->_ResetW(sp);
+    }
+
+    // copy ctor from another WeakPtr. weak ptr can only contruct from shared ptr,
+    // here copied weak ptr will be promoted to shared ptr then call copy ctor.
+    WeakPtr(WeakPtr& sp)
+    {
+        this->_ResetW(sp);
+    }
+
+    WeakPtr<T>& operator=(WeakPtr<T>& sp)
+    {
+        // check for self-assignment.
+        if (this == &sp)
+        {
+            return *this;
+        }
+
+        this->_ResetW(sp);
+        return *this;
+    }
+
+    WeakPtr<T>& operator=(SharedPtr<T>& sp)
+    {
+        this->_ResetW(sp);
+        return *this;
+    }
+
+    // checks whether the referenced object was already deleted.
+    bool Expired()
+    {
+        return UseCount() == 0;
+    }
+
+    // creates a SharedPtr that manages the referenced object.
+    SharedPtr<T> Lock()
+    {
+        return SharedPtr<T>(*this);
+    }
+
+    // releases the ownership of the managed object, if any. 
+    void Reset()
+    {
+        //pRef->weakRefCount--;
+        //// make this weak ptr own nothing.
+        //pRef = nullptr;
+    }
+
+private:
 };
 
 #endif

@@ -5,9 +5,12 @@
 #ifndef SHAREDPTR_H
 #define SHAREDPTR_H
 
+#include "BasePtr.h"
 #include "WeakPtr.h"
+
 template<typename T>
 class WeakPtr;
+
 // multiple SharedPtr can share/own same pointer which avoid redundant storage
 // of same resource, destroy pointer when there is not any SharedPtr own it.
 // reference counting is used to count the owning number.
@@ -257,7 +260,8 @@ private:
 */
 
 // Attempt 4
-
+// need to have a base class for SharedPtr and WeakPtr to share same resource and reference count.
+/*
 template<typename T>
 class SharedPtr
 {
@@ -358,5 +362,79 @@ private:
 
     Reference* pRef; // hold the resource and its reference count.
 };
+*/
+
+// Attempt 5:
+// use BasePtr for SharedPtr.
+template<typename T>
+class SharedPtr: public BasePtr<T>
+{
+public:
+    SharedPtr(T* p = nullptr) :BasePtr(p)
+    {
+    }
+
+    ~SharedPtr()
+    {
+    }
+
+    // make copying SharedPtr point to same resource.
+    SharedPtr(SharedPtr& sp)
+    {
+        this->_Reset(sp);
+    }
+
+    // SharedPtr should be able to contruct from WeakPtr.
+    SharedPtr(WeakPtr<T>& wp)
+    {
+        this->_Reset(wp);
+    }
+
+    SharedPtr<T>& operator=(SharedPtr<T>& sp)
+    {
+        // check for self-assignment.
+        if (this == &sp)
+        {
+            return *this;
+        }
+
+        _Reset(sp);
+        return *this;
+    }
+
+    T& operator*()
+    {
+        T* raw = this->GetRaw();
+
+        if (raw == nullptr)
+            throw raw;
+        return *raw;
+    }
+
+    T* operator->()
+    {
+        T* raw = this->Get();
+
+        if (raw == nullptr)
+            throw raw;
+        return raw;
+    }
+
+    // return raw pointer.
+    T* Get() const
+    {
+        return this->GetRaw();
+    }
+
+    // releases the ownership of the managed object, if any. 
+    void Reset()
+    {
+        this->_Reset();
+    }
+
+private:
+
+};
+
 
 #endif
