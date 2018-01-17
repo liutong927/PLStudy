@@ -162,9 +162,7 @@ public:
     // releases the ownership of the managed object, if any. 
     void Reset()
     {
-        //pRef->weakRefCount--;
-        //// make this weak ptr own nothing.
-        //pRef = nullptr;
+        this->_ResetW();
     }
 
 private:

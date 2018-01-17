@@ -70,33 +70,32 @@ void SharedPtr_Test()
     SharedPtr<int> b;
     b = a;
 
-
-    //int* pp = new int(5);
-    //std::shared_ptr<int> sp(pp);
-    //std::shared_ptr<int> spother(pp); // anther shared ptr, ref count=1.
-    //std::shared_ptr<int> spp(sp);
-    //std::shared_ptr<int> sppp = spp;
-    //cout << *(sppp.get());
-    //sppp.reset();
+    // std::shared_ptr test
+    int* x = new int(5);
+    std::shared_ptr<int> spx(x);
+    std::shared_ptr<int> spxx(spx); // anther shared ptr, ref count=1.
+    std::shared_ptr<int> spxxx = spxx;
+    cout << *(spxxx.get()) << endl;
+    spxxx.reset();
 }
 
 void WeakPtr_Test()
 {
-    /*
-    int* pp = new int(5);
+    // int* a = new int(5);
     // weak_ptr cannot contruct from raw pointer.
-    // std::weak_ptr<int> sp(pp);
-    std::shared_ptr<int> sp = std::make_shared<int>(5);
-    std::weak_ptr<int> wp(sp);
+    // std::weak_ptr<int> sp(a);
+    //std::shared_ptr<int> sp_std = std::make_shared<int>(5);
+    //std::weak_ptr<int> wp_std(sp_std);
     //std::weak_ptr<int> wp2(wp);
-    std::shared_ptr<int> spFromWeak = wp.lock();
-    //wp.reset();
-    */
+    //std::shared_ptr<int> spFromWeak = wp_std.lock();
+    //wp_std.reset();
+
 
     int* pp = new int(5);
     SharedPtr<int> sp(pp);
     WeakPtr<int> wp(sp);
     SharedPtr<int> splock = wp.Lock();
+    wp.Reset();
 }
 
 struct B;
@@ -152,9 +151,9 @@ void CyclicReference_Test()
 
 int main()
 {
-    AutoPtr_Test();
-    SharedPtr_Test();
-    CyclicReference_Test();
+    //AutoPtr_Test();
+    //SharedPtr_Test();
+    //CyclicReference_Test();
     WeakPtr_Test();
 }
 

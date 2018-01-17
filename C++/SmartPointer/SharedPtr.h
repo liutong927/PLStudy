@@ -426,11 +426,22 @@ public:
         return this->GetRaw();
     }
 
+    void Swap(SharedPtr& other)
+    {
+        this->_Swap(other);
+    }
+
     // releases the ownership of the managed object, if any. 
+    // release resource and convert to empty shared_ptr object
     void Reset()
     {
+        //SharedPtr().Swap(*this);
         this->_Reset();
     }
+
+    // Note::
+    // Why doesn¡¯t shared_ptr provide a release() function ?
+    // shared_ptr cannot give away ownership unless it¡¯s unique() because the other copy will still destroy the object.
 
 private:
 

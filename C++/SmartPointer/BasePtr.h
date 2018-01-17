@@ -71,6 +71,11 @@ public:
         pRef->weakRefCount--;
     }
 
+    void _Swap(BasePtr& other)
+    {
+        std::swap(pRef, other.pRef);
+    }
+
     // releases the ownership of the managed object, if any. 
     void _Reset()
     {
@@ -78,7 +83,13 @@ public:
         // make this shared ptr own nothing.
         pRef = nullptr;
         // should we handle raw pointer here? No. raw pointer's destruction relies on whether any managing shared ptr own it.
-        // one shared ptr reset does not there is no more other shared ptr own it.
+        // one shared ptr reset does not mean there is no more other shared ptr own it.
+    }
+
+    void _ResetW()
+    {
+        pRef->weakRefCount--;
+        pRef = nullptr;
     }
 
     void _Reset(BasePtr& other)
