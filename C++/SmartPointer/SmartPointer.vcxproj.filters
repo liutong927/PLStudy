@@ -24,6 +24,15 @@
     <ClInclude Include="WeakPtr.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BasePtr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UniquePtr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopedPtr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test.cpp">

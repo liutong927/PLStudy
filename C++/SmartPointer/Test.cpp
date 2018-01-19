@@ -5,6 +5,7 @@
 #include "AutoPtr.h"
 #include "SharedPtr.h"
 #include "WeakPtr.h"
+#include "UniquePtr.h"
 #include <memory>
 #include <iostream>
 
@@ -149,11 +150,25 @@ void CyclicReference_Test()
     p2->ptr = p1;// ref count=2
 }
 
+void UniquePtr_Test()
+{
+    int* p = new int(5);
+    UniquePtr<int> up(p);
+    UniquePtr<int> up2(std::move(up));
+    //UniquePtr<int> up2(up);//wrong
+    //UniquePtr<int> up3 = up;//wrong
+
+    std::unique_ptr<int> sup = std::make_unique<int>(6);
+    std::unique_ptr<int> sup2(std::move(sup));
+    std::unique_ptr<int> sup3 = std::move(sup);
+}
+
 int main()
 {
     //AutoPtr_Test();
     //SharedPtr_Test();
     //CyclicReference_Test();
-    WeakPtr_Test();
+    //WeakPtr_Test();
+    UniquePtr_Test();
 }
 
