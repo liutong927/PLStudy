@@ -3,9 +3,12 @@
 //**************************************************************
 
 #include "TestForward.h"
+#include "TestMove.h"
 
 int main()
 {
-    TestForward();
+    TestMove();
+    TestCtorCounter();
+    //TestForward();
 }
 

@@ -18,6 +18,9 @@
     <ClInclude Include="TestForward.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="TestMove.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TesMain.cpp">
