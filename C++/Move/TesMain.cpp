@@ -9,6 +9,6 @@ int main()
 {
     TestMove();
     TestCtorCounter();
-    //TestForward();
+    TestForward();
 }
 

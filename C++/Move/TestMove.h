@@ -7,6 +7,7 @@
 using namespace std;
 
 // std move implementation
+// std::move(x) is declared as an rvalue reference and does not have a name.Hence, it is an rvalue.
 template<typename T>
 typename remove_reference<T>::type&&
 Move(T&& t)
@@ -15,16 +16,9 @@ Move(T&& t)
     return static_cast<returnType>(t);
 }
 
-void TestMove()
+void TestFunc(int&&)
 {
-    int a = 1;
-    //int& b = 1;// wrong
-    int& b = a;
-    int&& c = 1;
-    //int&& c = b;// wrong
-    
-    static_assert(std::is_rvalue_reference<decltype(std::move(a))>::value, "the value is NOT rvalue reference after move.");
-    static_assert(std::is_rvalue_reference<decltype(Move(a))>::value,"the value is NOT rvalue reference after move.");
+
 }
 
 class CtorCounter
@@ -50,6 +44,7 @@ public:
         cc.m = nullptr;
         cout << "Move Construct:" << ++nMctor << endl;
     }
+
 public:
     static int nCtor;
     static int nDtor;
@@ -77,3 +72,42 @@ void TestCtorCounter()
     CtorCounter cc = GetObject();
     cout << "Resource from: " << __FUNCTION__ << ": " << hex << cc.m << endl;
 }
+
+void FuncRvalRef(CtorCounter&& cc)
+{
+    // cpctor or mctor will be called?
+    // it depends on whether cc is lvalue or rvalue.
+    // cc has name, so it is lvalue, call cpctor.
+    CtorCounter temp = cc;
+}
+
+void TestMove()
+{
+    int a = 1;//lvalue
+    //int& b = 1;// wrong
+    int& b = a;//lvalue reference
+    int* address = &b;//Note that b itself is lvalue but with lvalue reference type
+    int&& c = 1;//rvalue reference
+    int* address2 = &c;//Note that c itself is lvalue but with rvalue reference type
+    //int&& c = b;// wrong
+    int&& d = a++;
+
+    static_assert(!std::is_reference<decltype(a)>::value, "the value is reference.");
+    static_assert(!std::is_reference<decltype(a++)>::value, "the value is reference.");
+    static_assert(std::is_lvalue_reference<decltype(b)>::value, "the value is NOT lvalue reference.");
+    static_assert(std::is_rvalue_reference<decltype(c)>::value, "the value is NOT rvalue reference.");
+    static_assert(std::is_rvalue_reference<decltype(std::move(a))>::value, "the value is NOT rvalue reference after move.");
+    static_assert(std::is_rvalue_reference<decltype(Move(a))>::value, "the value is NOT rvalue reference after move.");
+
+    TestFunc(1);
+    //TestFunc(a);// wrong, a is lvalue
+    //TestFunc(c);// wrong, why? type of c is int&&, why cannot call TestFunc?
+    TestFunc(std::move(c));
+    //TestFunc(d);
+
+    // Importance: rvalue reference is not necessarily rvalue.
+    // Things that are declared as rvalue reference can be lvalues or rvalues. 
+    // The distinguishing criterion is: if it has a name, then it is an lvalue. Otherwise, it is an rvalue.
+    FuncRvalRef(CtorCounter());
+}
+
