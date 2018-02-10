@@ -41,88 +41,132 @@ class Optional
 public:
     Optional() :m_isInitialized(false)
     {
-
     }
 
     Optional(const T& v)
     {
-
+        Construct(v);
     }
 
-    Optional(Optional& other)
+    Optional(Optional& other) :m_isInitialized(false)
     {
-
+        if (other.m_isInitialized)
+        {
+            Construct(other);
+        }
     }
 
-    Optional(Optional&& other)
+    Optional(Optional&& other) :m_isInitialized(false)
     {
-
+        if (other.m_isInitialized)
+        {
+            Construct(std::move(other));
+        }
     }
 
     ~Optional()
     {
-
+        Destroy();
     }
 
     Optional& operator=(Optional& other)
     {
-
+        if (m_isInitialized)
+        {
+            if (other.m_isInitialized)
+            {
+                // is this correct?
+                m_storage = other.m_storage;
+            }
+            else
+            {
+                Destroy();
+            }
+        }
+        else
+        {
+            if (other.m_isInitialized)
+            {
+                Construct(other);
+            }
+        }
     }
 
     // accesses the contained value
     T* operator->()
     {
-
+        return &operator*();
     }
 
     T& operator*()
     {
+        if (m_isInitialized)
+            return *((T*)(&m_storage));
 
+        throw std::logic_error("try to get data in a Optional which is not initialized.");
     }
 
     // checks whether the object contains a value
     operator bool()
     {
-
+        return m_isInitialized;
     }
 
     bool HasValue()
     {
-
+        return m_isInitialized;
     }
 
     // returns the contained value.
     T& Value()
     {
-
+        if (m_isInitialized)
+            return m_storage;
+        else
+            throw std::logic_error("try to get data in a Optional which is not initialized.");
     }
 
     // returns the contained value if available, another value otherwise.
-    T& ValueOr()
+    template <class U>
+    T& ValueOr(U& v)
     {
-
+        if (m_isInitialized)
+            return m_storage;
+        else
+            return v;
     }
 
     // destroys any contained value.
     void Reset()
     {
-
+        Destroy();
     }
 
-    // Initializes the contained value by direct-initializing (but not direct-list-initializing)
-    // with std::forward<Args>(args)... as parameters.
-    template< class... Args >
-    T& Emplace(Args&&... args)
+    // constructs the contained value in-place.
+    template<class... Args>
+    void Emplace(Args&&... args)
     {
-
+        Destroy();
+        Construct(std::forward<Args>(args)...);
     }
 
 private:
-
-    void construct(T& val)
+    template<class... Args>
+    void Construct(Args&&... args)
     {
-        ::new (m_storage.()) value_type(val);
-        m_initialized = true;
+        // placement new T
+        new (&m_storage) T(std::forward<Args>(args)...);
+        m_isInitialized = true;
+    }
+
+    // destroy current value, leave it as uninitialized.
+    void Destroy()
+    {
+        if (m_isInitialized)
+        {
+            ((T*)&m_storage)->~T();
+            m_isInitialized = false;
+        }
     }
 
 private:
