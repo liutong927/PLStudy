@@ -34,9 +34,11 @@ int main()
     boost::optional<string> c;
 
     cout << *a << endl;
+    cout << a.Value() << endl;
 
     if (!b.HasValue())
         cout << "b is not initialized." << endl;
+    cout << b.ValueOr(string("none")) << endl;
 
     Optional<Test> test;
     test.Emplace(1, 2);

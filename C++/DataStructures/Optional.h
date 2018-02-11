@@ -121,7 +121,7 @@ public:
     T& Value()
     {
         if (m_isInitialized)
-            return m_storage;
+            return (T&)m_storage;
         else
             throw std::logic_error("try to get data in a Optional which is not initialized.");
     }
@@ -131,7 +131,7 @@ public:
     T& ValueOr(U& v)
     {
         if (m_isInitialized)
-            return m_storage;
+            return (T&)m_storage;
         else
             return v;
     }
