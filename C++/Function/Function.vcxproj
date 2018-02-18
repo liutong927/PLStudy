@@ -65,6 +65,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Bind.h" />
     <ClInclude Include="Lambda.h" />
   </ItemGroup>
   <ItemGroup>
