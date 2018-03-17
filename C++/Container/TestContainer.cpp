@@ -4,10 +4,8 @@
 
 #include "Vector.h"
 
-
 void main()
 {
-    TestSTDVector();
     TestVector();
 }
 
