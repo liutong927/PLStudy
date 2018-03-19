@@ -16,6 +16,8 @@ class Vector
 public:
     typedef T* iterator;
     typedef const T* const_iterator;
+    typedef T& reference;
+    typedef const T& const_reference;
 
     /*******************************************************/
     // ctor and dtor
@@ -245,7 +247,7 @@ public:
             // try to reallocate 50% growth of storage if available.
             size_t minimalStorage = Size() + count;
             //size_t newCapacity = (3/2)*Capacity(); // note this is incorrect, newCap =(1.5)*Capacity=1*Capacity.
-            size_t newCapacity = Capacity()*3/2;
+            size_t newCapacity = Capacity() * 3 / 2;
             if (newCapacity < minimalStorage)
             {
                 newCapacity = minimalStorage;
@@ -300,7 +302,7 @@ public:
         else
         {
             // need to reallocate.
-            Reserve(Capacity()*3/2);
+            Reserve(Capacity() * 3 / 2);
             Push_Back(value);
         }
     }
@@ -348,6 +350,44 @@ public:
     /*******************************************************/
     // Accessor
     /*******************************************************/
+
+    // Returns a reference to the element at specified location pos, with bounds checking.
+    // If pos is not within the range of the container, an exception of type std::out_of_range is thrown.
+    reference At(size_t pos)
+    {
+        if (pos >= Size())
+            throw std::out_of_range("Error: out of range of vector.");
+
+        return *(Begin() + pos);
+    }
+
+    // Returns a reference to the element at specified location pos. No bounds checking is performed.
+    reference operator[](size_t pos)
+    {
+        return *(Begin() + pos);
+    }
+
+    // Returns a reference to the first element in the container.
+    // Calling front on an empty container is undefined.
+    reference Front()
+    {
+        return *Begin();
+    }
+
+    // Returns reference to the last element in the container.
+    // Calling back on an empty container is undefined.
+    reference Back()
+    {
+        return *(End() - 1);
+    }
+
+    // Returns pointer to the underlying array serving as element storage.
+    // The pointer is such that range [data(); data() + size()) is always a valid range,
+    // even if the container is empty (data() is not dereferenceable in that case).
+    T* Data()
+    {
+        return _first;
+    }
 
 private:
     // destroy(deconstruct) objects in range.
@@ -438,6 +478,12 @@ void TestSTDVector()
     vec2.erase(vec2.begin(), vec2.begin() + 2);
     PrintVector(vec2);
 
+    // test accessor
+    cout << "vec2[0] = " << vec2[0] << endl;
+    cout << "vec2[5] = " << vec2[5] << endl;
+    cout << "vec2.front() = " << vec2.front() << endl;
+    cout << "vec2.back() = " << vec2.back() << endl;
+
     cout << "end of test std vector." << endl;
 }
 
@@ -489,6 +535,13 @@ void TestMyVector()
 
     vec2.Erase(vec2.Begin(), vec2.Begin() + 2);
     PrintVector(vec2);
+
+    // test accessor
+    cout << "vec2[0] = " << vec2[0] << endl;
+    cout << "vec2[5] = " << vec2[5] << endl;
+    //vec2.At(6); // will throw error.
+    cout << "vec2.Front() = " << vec2.Front() << endl;
+    cout << "vec2.Back() = " << vec2.Back() << endl;
 
     cout << "end of test Vector." << endl;
 }
