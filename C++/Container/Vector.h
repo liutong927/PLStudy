@@ -62,6 +62,18 @@ public:
     Vector(Vector&& other)
     {
         // TODO
+
+        // note vector<int> vec6(std::move(vec5))
+        // std::move(vec5) is rvalue and its type is rvalue reference, 
+        // should match Assign_rv which expect rvalue reference.
+
+        // why still need forward?
+        // argument other here is still lvalue, if we do not do any cast,
+        // it can only call to Assign_rv(Vector&) which bind to lvalue.
+        // but here Assign_rv can only bind rvalue, so need forward(cast) other to rvalue.
+        // also works for Assign_rv(std::move(other));
+        Assign_rv(std::forward<Vector>(other));
+        //Assign_rv(other);
     }
 
     ~Vector()
@@ -84,7 +96,7 @@ public:
 
     Vector& operator=(Vector&& other)
     {
-        // TODO
+        Assign_rv(std::forward<Vector>(other));
     }
 
     /*******************************************************/
@@ -401,6 +413,19 @@ private:
         }
     }
 
+    // assign vector rvalue version
+    void Assign_rv(Vector&& other)
+    {
+        // swap all iterators.
+        _first = other._first;
+        _last = other._last;
+        _end = other._end;
+
+        other._first = nullptr;
+        other._last = nullptr;
+        other._end = nullptr;
+    }
+
 private:
     std::allocator<T> alloc;
 
@@ -437,11 +462,13 @@ void TestSTDVector()
     vector<int> vec3(5);
     //vector<int> vec4{ 1, 2, 3, 4, 5 };
     vector<int> vec5(vec3.begin(), vec3.end());
+    vector<int> vec6(std::move(vec5));//call mctor, will make vec5 empty!
 
     PrintVector(vec1);
     PrintVector(vec2);
     PrintVector(vec3);
     PrintVector(vec5);
+    PrintVector(vec6);
 
     // assign/insert test
     // if assigned size is less(equal) to current one, then capacity will not be changed.
@@ -495,11 +522,13 @@ void TestMyVector()
     Vector<int> vec3(5);
     //Vector<int> vec4{ 1, 2, 3, 4, 5 };
     Vector<int> vec5(vec3.Begin(), vec3.End());
+    Vector<int> vec6(std::move(vec5));
 
     PrintVector(vec1);
     PrintVector(vec2);
     PrintVector(vec3);
     PrintVector(vec5);
+    PrintVector(vec6);
 
     // assign/insert test
     // if assigned size is less(equal) to current one, then capacity will not be changed.

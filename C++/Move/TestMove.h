@@ -8,6 +8,15 @@ using namespace std;
 
 // std move implementation
 // std::move(x) is declared as an rvalue reference and does not have a name.Hence, it is an rvalue.
+
+// <clarification from "Effective Modern C++">
+// The ¡°&&¡± part of the function¡¯s return type implies that std::move returns an rvalue
+// reference, but if the type T happens to be an lvalue reference, T&& would become an lvalue reference.
+// To prevent this from happening, the type trait std::remove_reference is applied to T,
+// thus ensuring that ¡°&&¡± is applied to a type that isn¡¯t a reference.
+// That guarantees that std::move truly returns an rvalue reference, and that¡¯s important,
+// because rvalue references returned from functions are rvalues.
+// Thus, std::move casts its argument to an rvalue, and that¡¯s all it does.
 template<typename T>
 typename remove_reference<T>::type&&
 Move(T&& t)
@@ -84,12 +93,12 @@ void FuncRvalRef(CtorCounter&& cc)
 void TestMove()
 {
     int a = 1;//lvalue
-    //int& b = 1;// wrong
+    //int& b = 1;// wrong, lvalue reference cannot bind to rvalue.
     int& b = a;//lvalue reference
     int* address = &b;//Note that b itself is lvalue but with lvalue reference type
     int&& c = 1;//rvalue reference
     int* address2 = &c;//Note that c itself is lvalue but with rvalue reference type
-    //int&& c = b;// wrong
+    //int&& c = b;// wrong, rvalue reference cannot bind to lvalue.
     int&& d = a++;
 
     static_assert(!std::is_reference<decltype(a)>::value, "the value is reference.");
@@ -102,8 +111,9 @@ void TestMove()
     TestFunc(1);
     //TestFunc(a);// wrong, a is lvalue
     //TestFunc(c);// wrong, why? type of c is int&&, why cannot call TestFunc?
+                  // this is because c has a name, is lvalue.
     TestFunc(std::move(c));
-    //TestFunc(d);
+    //TestFunc(d);// wrong, same with TestFunc(c).
 
     // Importance: rvalue reference is not necessarily rvalue.
     // Things that are declared as rvalue reference can be lvalues or rvalues. 

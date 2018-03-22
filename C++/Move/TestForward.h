@@ -8,6 +8,9 @@
 using namespace std;
 
 // Do we need && version?
+
+// Forward is a conditional cast, cast to rvalue only if its arguments was
+// initialized with an rvalue.
 template<typename T>
 T&& Forward(typename std::remove_reference<T>::type& t)
 {
