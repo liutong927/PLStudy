@@ -61,8 +61,6 @@ public:
 
     Vector(Vector&& other)
     {
-        // TODO
-
         // note vector<int> vec6(std::move(vec5))
         // std::move(vec5) is rvalue and its type is rvalue reference, 
         // should match Assign_rv which expect rvalue reference.
@@ -74,6 +72,11 @@ public:
         // also works for Assign_rv(std::move(other));
         Assign_rv(std::forward<Vector>(other));
         //Assign_rv(other);
+    }
+
+    Vector(std::initializer_list<T> init)
+    {
+        // TODO
     }
 
     ~Vector()
@@ -162,7 +165,31 @@ public:
     // Replaces the contents with copies of those in the range[first, last).
     void Assign(iterator first, iterator last)
     {
-        // TODO
+        Clear();
+
+        if (first == last)
+            return;
+
+        size_t newSize = std::distance(first, last);
+
+        // not enough room, 
+        if (newSize > Capacity())
+        {
+            size_t newCapacity = newSize * 3 / 2;
+
+            iterator newFirst = alloc.allocate(newCapacity);
+
+            // destroy old storage
+            Destroy(_first, _last);
+            alloc.deallocate(_first, Capacity());
+
+            // reset iterators
+            _first = newFirst;
+            _last = _first;
+            _end = _first + newCapacity;
+        }
+
+        _last = std::uninitialized_copy(first, last, _first);
     }
 
     // Removes all elements from the container.
@@ -313,8 +340,12 @@ public:
         }
         else
         {
-            // need to reallocate.
-            Reserve(Capacity() * 3 / 2);
+            //// need to reallocate.
+            //Reserve(Capacity() * 3 / 2);
+
+            // Capacity could be 0 here, so need to Reserve at leat 1 here.
+            size_t newCap = (Size() + 1) * 3 / 2;
+            Reserve(newCap);
             Push_Back(value);
         }
     }
@@ -323,6 +354,20 @@ public:
     {
         Destroy(_last - 1, _last);
         --_last;
+    }
+
+    // constructs element in-place.
+    template<class... Args>
+    iterator Emplace(iterator pos, Args&&... args)
+    {
+        // TODO
+    }
+
+    // constructs an element in-place at the end.
+    template<class... Args>
+    void Emplace_Back(Args&&... args)
+    {
+        // TODO
     }
 
     /*******************************************************/
@@ -461,12 +506,18 @@ void TestSTDVector()
     vector<int> vec2(5, 1);
     vector<int> vec3(5);
     //vector<int> vec4{ 1, 2, 3, 4, 5 };
+    vector<int> vec4;
+    for (int i = 1; i < 6; i++)
+    {
+        vec4.push_back(i);
+    }
     vector<int> vec5(vec3.begin(), vec3.end());
     vector<int> vec6(std::move(vec5));//call mctor, will make vec5 empty!
 
     PrintVector(vec1);
     PrintVector(vec2);
     PrintVector(vec3);
+    PrintVector(vec4);
     PrintVector(vec5);
     PrintVector(vec6);
 
@@ -479,6 +530,14 @@ void TestSTDVector()
 
     vec2.assign(6, 3);
     PrintVector(vec2);
+
+    vector<int> vec7;
+    vec7.assign(vec4.begin(), vec4.begin() + 2);
+    PrintVector(vec7);
+
+    // vec7 capacity is enough to assign, first iterator is unchanged.
+    vec7.assign(vec4.begin(), vec4.begin() + 1);
+    PrintVector(vec7);
 
     vec2.insert(vec2.begin() + 1, 5);
     PrintVector(vec2);
@@ -520,13 +579,18 @@ void TestMyVector()
     Vector<int> vec1;
     Vector<int> vec2(5, 1);
     Vector<int> vec3(5);
-    //Vector<int> vec4{ 1, 2, 3, 4, 5 };
+    Vector<int> vec4;
+    for (int i = 1; i < 6; i++)
+    {
+        vec4.Push_Back(i);
+    }
     Vector<int> vec5(vec3.Begin(), vec3.End());
     Vector<int> vec6(std::move(vec5));
 
     PrintVector(vec1);
     PrintVector(vec2);
     PrintVector(vec3);
+    PrintVector(vec4);
     PrintVector(vec5);
     PrintVector(vec6);
 
@@ -539,6 +603,14 @@ void TestMyVector()
 
     vec2.Assign(6, 3);
     PrintVector(vec2);
+
+    Vector<int> vec7;
+    vec7.Assign(vec4.Begin(), vec4.Begin() + 2);
+    PrintVector(vec7);
+
+    // vec7 capacity is enough to assign, first iterator is unchanged.
+    vec7.Assign(vec4.Begin(), vec4.Begin() + 1);
+    PrintVector(vec7);
 
     vec2.Insert(vec2.Begin() + 1, 5);
     PrintVector(vec2);
