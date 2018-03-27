@@ -67,6 +67,9 @@
   <ItemGroup>
     <ClCompile Include="TestMemory.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestAlignment.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
