@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include "..\Memory\Allocator.h"
 
 using namespace std;
 
@@ -472,7 +473,8 @@ private:
     }
 
 private:
-    std::allocator<T> alloc;
+    //std::allocator<T> alloc;
+    Allocator<T> alloc;
 
     iterator _first;
     iterator _last;
