@@ -15,6 +15,7 @@ template<typename T>
 class Vector
 {
 public:
+    // Vector can use raw pointer as iterator since memory model is consecutive.
     typedef T* iterator;
     typedef const T* const_iterator;
     typedef T& reference;
@@ -492,13 +493,6 @@ void PrintVector(T t)
         cout << v << " ";
     }
     cout << endl;
-
-    //// use iterator to output elements
-    //for (vector<int>::iterator iter = vec2.begin(); iter != vec2.end(); iter++)
-    //{
-    //    cout << *iter << " ";
-    //}
-    //cout << endl;
 }
 
 void TestSTDVector()
@@ -645,6 +639,13 @@ void TestMyVector()
     //vec2.At(6); // will throw error.
     cout << "vec2.Front() = " << vec2.Front() << endl;
     cout << "vec2.Back() = " << vec2.Back() << endl;
+
+    // test iterator
+    for (Vector<int>::iterator iter = vec2.begin(); iter != vec2.end(); iter++)
+    {
+        cout << *iter << " ";
+    }
+    cout << endl;
 
     cout << "end of test Vector." << endl;
 }

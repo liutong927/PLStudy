@@ -1,6 +1,8 @@
 //**************************************************************
 //         std::allocator implementation
 //**************************************************************
+#ifndef ALLOCATOR_H
+#define ALLOCATOR_H
 
 #include <iostream>
 
@@ -19,6 +21,13 @@ public:
 
     typedef size_t size_type;
     typedef ptrdiff_t difference_type;
+
+    // convert allocator<T> to allocator<U>.
+    template<typename U>
+    struct rebind
+    {
+        typedef Allocator<U> other;
+    };
 
     // ctor & dctor
     Allocator()
@@ -105,3 +114,5 @@ void TestAllocator()
     cout << *ptr << endl;
     cout << *(ptr+1) << endl;
 }
+
+#endif

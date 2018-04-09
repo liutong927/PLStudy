@@ -66,6 +66,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="List.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
