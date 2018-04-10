@@ -206,6 +206,20 @@ public:
     // Removes all elements from the container.
     void Clear()
     {
+        // delete from begin() node
+        NodePtr currentNode = head->next;
+        while (currentNode != head)
+        {
+            // cache next node of current, we will delete current now so we cannot get its next after deletion.
+            NodePtr nextNode = currentNode->next;
+            DestroyNode(currentNode);
+            currentNode = nextNode;
+        }
+
+        // reset head
+        head->next = head;
+        head->prev = head;
+        size = 0;
     }
 
     // inserts value before pos.
@@ -219,11 +233,20 @@ public:
     iterator Insert(iterator pos, size_t count, const T& value)
     {
         InsertNodes(pos, count, value);
+        // TODO
         //return pos - count;
     }
 
     iterator Erase(iterator pos)
     {
+        // reset pos's prev node and next node
+        NodePtr prevNode = pos.nodePtr->prev;
+        NodePtr nextNode = pos.nodePtr->next;
+        prevNode->next = nextNode;
+        nextNode->prev = prevNode;
+        --size;
+        DestroyNode(pos.nodePtr);
+        return nextNode;
     }
 
     iterator Erase(iterator first, iterator last)
@@ -337,7 +360,8 @@ public:
     // Calling back on an empty container is undefined.
     reference Back()
     {
-        return *(End() - 1);
+        // use pre-decrement in case we do not overload operator-.
+        return *(--End());
     }
 
     /*******************************************************/
@@ -363,7 +387,7 @@ private:
     void DeallocNode(NodePtr np)
     {
         typename allocator<T>::rebind<Node<T>>::other allocProxy;
-        allocProxy.deallocate(np);
+        allocProxy.deallocate(np, 1);
     }
 
     NodePtr CreateNode(const T& t)
@@ -447,6 +471,8 @@ void TestSTDList()
     list<int> lst5(lst3.begin(), lst3.end());
     list<int> lst6(lst5);
     list<int> lst7(std::move(lst6));
+
+    lst7.clear();
 }
 
 void TestMyList()
@@ -457,6 +483,9 @@ void TestMyList()
     List<int> lst5(lst3.begin(), lst3.end());
     List<int> lst6(lst5);
     List<int> lst7(std::move(lst6));
+
+    lst7.Clear();
+
 }
 
 void TestList()
