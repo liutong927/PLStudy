@@ -50,7 +50,8 @@ public:
     }
 
     // TODO: Vector(const Vector& other)
-    Vector(Vector& other) :_first(nullptr), _last(nullptr), _end(nullptr)
+    // const vector pointer can only call const member function.
+    Vector(const Vector& other) :_first(nullptr), _last(nullptr), _end(nullptr)
     {
         size_t count = other.End() - other.Begin();
         // note other vector could be empty.
@@ -83,25 +84,31 @@ public:
 
     ~Vector()
     {
-        Destroy(_first, _last);
-        alloc.deallocate(_first, Capacity());
-
-        _first = _last = _end = nullptr;
+        Tidy();
     }
 
     Vector& operator=(const Vector& other)
     {
-        if (&other == this)
-            return;
+        if (&other != this)
+        {
+            size_t count = other.End() - other.Begin();
+            _first = alloc.allocate(count);
+            _last = _end = std::uninitialized_copy(other.Begin(), other.End(), _first);
+        }
 
-        size_t count = other.End() - other.Begin();
-        _first = alloc.allocate(count);
-        _last = _end = std::uninitialized_copy(other.Begin(), other.End(), _first);
+        return *this;
     }
 
     Vector& operator=(Vector&& other)
     {
-        Assign_rv(std::forward<Vector>(other));
+        if (this != &other)
+        {
+            // free old storage.
+            Tidy();
+            Assign_rv(std::forward<Vector>(other));
+        }
+
+        return *this;
     }
 
     /*******************************************************/
@@ -345,7 +352,7 @@ public:
             //// need to reallocate.
             //Reserve(Capacity() * 3 / 2);
 
-            // Capacity could be 0 here, so need to Reserve at leat 1 here.
+            // Capacity could be 0 here, so need to Reserve at least 1 here.
             size_t newCap = (Size() + 1) * 3 / 2;
             Reserve(newCap);
             Push_Back(value);
@@ -391,12 +398,22 @@ public:
         return _first;
     }
 
+    iterator Begin() const
+    {
+        return _first;
+    }
+
     const_iterator CBegin()
     {
         return _first;
     }
 
     iterator End()
+    {
+        return _last;
+    }
+
+    iterator End() const
     {
         return _last;
     }
@@ -458,6 +475,15 @@ private:
         {
             alloc.destroy(first);
         }
+    }
+
+    // tidy all storage
+    void Tidy()
+    {
+        Destroy(_first, _last);
+        alloc.deallocate(_first, Capacity());
+
+        _first = _last = _end = nullptr;
     }
 
     // assign vector rvalue version
@@ -582,6 +608,8 @@ void TestMyVector()
     }
     Vector<int> vec5(vec3.Begin(), vec3.End());
     Vector<int> vec6(std::move(vec5));
+    //vec6 = vec4;
+    //vec6 = std::move(vec4);
 
     PrintVector(vec1);
     PrintVector(vec2);

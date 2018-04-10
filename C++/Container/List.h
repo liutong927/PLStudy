@@ -119,18 +119,27 @@ public:
 
     List(size_t count)
     {
+        InitializeList();
+        InsertNodes(Begin(), count, 0);
     }
 
     List(iterator first, iterator last)
     {
+        InitializeList();
+        InsertRange(Begin(), first, last);
     }
 
     List(const List& other)
     {
+        InitializeList();
+        InsertRange(Begin(), other.Begin(), other.End());
     }
 
     List(List&& other)
     {
+        InitializeList();
+        std::swap(head, other.head);
+        std::swap(size, other.size);
     }
 
     List(std::initializer_list<T> init)
@@ -140,17 +149,30 @@ public:
 
     ~List()
     {
+        Clear();
     }
 
     List& operator=(const List& other)
     {
-        if (&other == this)
-            return;
+        // TODO
+        if (this != &other)
+        {
 
+        }
+
+        return *this;
     }
 
     List& operator=(List&& other)
     {
+        if (this != &other)
+        {
+            Clear();
+            std::swap(head, other.head);
+            std::swap(size, other.size);
+        }
+
+        return *this;
     }
 
     /*******************************************************/
@@ -189,18 +211,15 @@ public:
     // inserts value before pos.
     iterator Insert(iterator pos, const T& value)
     {
-        // create new list node and specify its prev/next.
-        NodePtr tmp = CreateNode(value);
-        tmp->next = pos.nodePtr;
-        tmp->prev = pos.nodePtr->prev;
-        // reset original pos and pos-1
-        pos.nodePtr->prev = tmp;
-        pos.nodePtr->prev->next = tmp;
-        return tmp;
+        InsertNode(pos, value);
+        // we can directly return pos-1 since insert will not invalidate pos iterator.
+        return --pos;
     }
 
     iterator Insert(iterator pos, size_t count, const T& value)
     {
+        InsertNodes(pos, count, value);
+        //return pos - count;
     }
 
     iterator Erase(iterator pos)
@@ -268,7 +287,17 @@ public:
         return head->next;
     }
 
+    iterator Begin() const
+    {
+        return head->next;
+    }
+
     const_iterator CBegin()
+    {
+        return Begin();
+    }
+
+    const_iterator CBegin() const
     {
         return Begin();
     }
@@ -278,7 +307,17 @@ public:
         return head;
     }
 
+    iterator End() const
+    {
+        return head;
+    }
+
     const_iterator CEnd()
+    {
+        return End();
+    }
+
+    const_iterator CEnd() const
     {
         return End();
     }
@@ -351,6 +390,7 @@ private:
         head = AllocNode();
         head->next = head;
         head->prev = head;
+        size = 0;
     }
 
     // insert one node into list at position
@@ -380,6 +420,14 @@ private:
         }
     }
 
+    void InsertRange(iterator pos, iterator first, iterator last)
+    {
+        for (; first != last; ++first)
+        {
+            InsertNode(pos, *first);
+        }
+    }
+
     void IncreaseSize(size_t count)
     {
         size += count;
@@ -395,12 +443,20 @@ void TestSTDList()
 {
     list<int> lst1;
     list<int> lst2(5, 1);
+    list<int> lst3(5);
+    list<int> lst5(lst3.begin(), lst3.end());
+    list<int> lst6(lst5);
+    list<int> lst7(std::move(lst6));
 }
 
 void TestMyList()
 {
     List<int> lst1;
     List<int> lst2(5, 1);
+    List<int> lst3(5);
+    List<int> lst5(lst3.begin(), lst3.end());
+    List<int> lst6(lst5);
+    List<int> lst7(std::move(lst6));
 }
 
 void TestList()
