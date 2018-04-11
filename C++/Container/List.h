@@ -154,10 +154,9 @@ public:
 
     List& operator=(const List& other)
     {
-        // TODO
         if (this != &other)
         {
-
+            Assign(other.Begin(), other.End());
         }
 
         return *this;
@@ -196,11 +195,18 @@ public:
     // Assigns values to the container.
     void Assign(size_t count, const T& value)
     {
+        Clear();
+        InsertNodes(Begin(), count, value);
     }
 
     // Replaces the contents with copies of those in the range[first, last).
     void Assign(iterator first, iterator last)
     {
+        // TODO: note std assign range will implement by reusing old storage
+        // and erase extra nodes to improve performance. Here do it for simplicity
+        // by clear old storage directly and insert new ones.
+        Clear();
+        InsertRange(Begin(), first, last);
     }
 
     // Removes all elements from the container.
@@ -230,43 +236,82 @@ public:
         return --pos;
     }
 
+    // return iterator pointing to the first element inserted, or pos if count==0.
     iterator Insert(iterator pos, size_t count, const T& value)
     {
+        // TODO: should we check if it is inserted into begin or not??
+        iterator prevPos = pos;
+        --prevPos; // pos's prev iterator.
         InsertNodes(pos, count, value);
-        // TODO
-        //return pos - count;
+        return ++prevPos;// after insertion, prevPos next node is the first inserted node.
     }
 
+    // Removes the element at pos.
     iterator Erase(iterator pos)
     {
-        // reset pos's prev node and next node
+        // unlink: reset pos's prev node and next node
         NodePtr prevNode = pos.nodePtr->prev;
         NodePtr nextNode = pos.nodePtr->next;
         prevNode->next = nextNode;
         nextNode->prev = prevNode;
-        --size;
+
+        DecreaseSize(1);
         DestroyNode(pos.nodePtr);
         return nextNode;
     }
 
+    // Removes the elements in the range[first; last).
+    // Return iterator following the last removed element. 
+    // If the iterator pos refers to the last element, the end() iterator is returned.
     iterator Erase(iterator first, iterator last)
     {
+        //// unlink
+        //NodePtr prevNode = *first->prev;
+        //NodePtr nextNode = *last->next;
+        //prevNode->next = nextNode;
+        //nextNode->prev = prevNode;
+
+        //for (NodePtr current = first; current != last; ++current)
+        //{
+        //    DestroyNode(current);
+        //    DecreaseSize(1);
+        //}
+        //return nextNode;
+
+        // remove all
+        if (first == Begin() && last == End())
+        {
+            Clear();
+            return End();
+        }
+        else// remove range
+        {
+            while (first != last)
+            {
+                first = Erase(first);
+            }
+            return last;
+        }
     }
 
     void Push_Back(const T& value)
     {
+        Insert(End(), value);
     }
 
     void Pop_Back()
     {
+        Erase(--End());
     }
 
     void Push_Front(const T& value)
     {
+        Insert(Begin(), value);
     }
 
     void Pop_Front()
     {
+        Erase(Begin());
     }
 
     // constructs element in-place.
@@ -368,6 +413,43 @@ public:
     // Operations
     /*******************************************************/
 
+    // merges two sorted lists
+    void Merge(List& other)
+    {
+
+    }
+
+    // moves elements from another list
+    void Splice(iterator pos, List& other)
+    {
+
+    }
+
+    // removes all elements that are equal to value
+    void Remove(const T& value)
+    {
+
+    }
+
+    // Reverses the order of the elements in the container. No references or iterators become invalidated.
+    void Reverse()
+    {
+
+    }
+
+    // Removes all consecutive duplicate elements from the container.
+    // Only the first element in each group of equal elements is left.
+    void Unique()
+    {
+
+    }
+
+    // Sorts the elements in ascending order.
+    void Sort()
+    {
+
+    }
+
 private:
 
     /*******************************************************/
@@ -455,6 +537,11 @@ private:
     void IncreaseSize(size_t count)
     {
         size += count;
+    }
+
+    void DecreaseSize(size_t count)
+    {
+        size -= count;
     }
 
 private:
