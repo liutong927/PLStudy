@@ -202,7 +202,7 @@ public:
     // Replaces the contents with copies of those in the range[first, last).
     void Assign(iterator first, iterator last)
     {
-        // TODO: note std assign range will implement by reusing old storage
+        // NOTE: note std assign range will implement by reusing old storage
         // and erase extra nodes to improve performance. Here do it for simplicity
         // by clear old storage directly and insert new ones.
         Clear();
@@ -239,7 +239,8 @@ public:
     // return iterator pointing to the first element inserted, or pos if count==0.
     iterator Insert(iterator pos, size_t count, const T& value)
     {
-        // TODO: should we check if it is inserted into begin or not??
+        // NOTE: should we check if it is inserted into begin or not??
+        // below logic is enough, although std implementation makes separate logic to deal with insert at begin.
         iterator prevPos = pos;
         --prevPos; // pos's prev iterator.
         InsertNodes(pos, count, value);
@@ -278,7 +279,7 @@ public:
         //}
         //return nextNode;
 
-        // remove all
+        // remove all, keep this branch as std for performance, although else branch can erase all nodes too.
         if (first == Begin() && last == End())
         {
             Clear();
@@ -550,16 +551,53 @@ private:
     size_t size;// number of elements.
 };
 
+// test routines for vector
+template<typename T>
+void PrintList(T t)
+{
+    // iterator test
+    // use range to output elements
+    for (auto v : t)
+    {
+        cout << v << " ";
+    }
+    cout << endl;
+}
+
 void TestSTDList()
 {
     list<int> lst1;
     list<int> lst2(5, 1);
     list<int> lst3(5);
+    list<int> lst4{ 1, 2, 3, 4, 5 };
     list<int> lst5(lst3.begin(), lst3.end());
     list<int> lst6(lst5);
     list<int> lst7(std::move(lst6));
 
+    PrintList(lst1);
+    PrintList(lst2);
+    PrintList(lst3);
+    PrintList(lst4);
+    PrintList(lst5);
+    PrintList(lst6);
+    PrintList(lst7);
+
+    // test clear
     lst7.clear();
+    PrintList(lst7);
+
+    // test insert n val
+    lst4.insert(lst4.begin(), 2, 9);
+    PrintList(lst4);
+
+    lst4.insert(++lst4.begin(), 2, 8);
+    PrintList(lst4);
+
+    // test erase range
+    lst4.erase(lst4.begin(), lst4.end());
+    PrintList(lst4);
+
+    cout << "end of test std vector." << endl;
 }
 
 void TestMyList()
@@ -567,12 +605,39 @@ void TestMyList()
     List<int> lst1;
     List<int> lst2(5, 1);
     List<int> lst3(5);
+    List<int> lst4;
+    for (int i = 1; i < 6; i++)
+    {
+        lst4.Push_Back(i);
+    }
     List<int> lst5(lst3.begin(), lst3.end());
     List<int> lst6(lst5);
     List<int> lst7(std::move(lst6));
 
-    lst7.Clear();
+    PrintList(lst1);
+    PrintList(lst2);
+    PrintList(lst3);
+    PrintList(lst4);
+    PrintList(lst5);
+    PrintList(lst6);
+    PrintList(lst7);
 
+    // test clear
+    lst7.Clear();
+    PrintList(lst7);
+
+    // test insert n val
+    lst4.Insert(lst4.Begin(), 2, 9);
+    PrintList(lst4);
+
+    lst4.Insert(++lst4.Begin(), 2, 8);
+    PrintList(lst4);
+
+    // test erase range
+    lst4.Erase(lst4.Begin(), lst4.End());
+    PrintList(lst4);
+
+    cout << "end of test List." << endl;
 }
 
 void TestList()
