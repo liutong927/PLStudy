@@ -414,35 +414,124 @@ public:
     // Operations
     /*******************************************************/
 
-    // merges two sorted lists
+    // merges two sorted lists. The lists should be sorted into ascending order.
+    // No elements are copied. The container other becomes empty after the operation.
     void Merge(List& other)
     {
+        iterator first1 = Begin();
+        iterator last1 = End();
+        iterator first2 = other.Begin();
+        iterator last2 = other.End();
 
+        while (first1 != last1 && first2 != last2)
+        {
+            if (*first1 > *first2)
+            {
+                iterator next = first2;
+                Transfer(first1, first2, ++next);// transfer first2 to list1, [first1, first1+1)
+                first2 = next;
+            }
+            else
+            {
+                ++first1;
+            }
+        }
+
+        // after loop the whole list1, if still left with list2, transfer left nodes to append to list1
+        if (first2 != last2)
+        {
+            Transfer(first1, first2, last2);
+        }
     }
 
-    // moves elements from another list
+    // transfer all elements from another list into *this.
+    // The elements are inserted before the element pointed to by pos.
+    // The container other becomes empty after the operation.
     void Splice(iterator pos, List& other)
     {
+        if (!other.Empty())
+        {
+            Transfer(pos, other.Begin(), other.End());
+        }
+    }
 
+    // Transfers the element pointed to by it from other into *this.
+    // The element is inserted before the element pointed to by pos.
+    void Splice(iterator pos, List& other, iterator it)
+    {
+        iterator last = it;
+        ++last;
+        Transfer(pos, it, last);
+    }
+
+    // Transfers the elements in the range [first, last) from other into *this.
+    // The elements are inserted before the element pointed to by pos.
+    void Splice(iterator pos, List& other, iterator first, iterator last)
+    {
+        Transfer(pos, first, last);
     }
 
     // removes all elements that are equal to value
     void Remove(const T& value)
     {
+        // NOTE: A typical code error, current iterator will be invalid after erase,
+        // thus ++current will get a wrong memory location.
+        //for (iterator current = Begin(); current != End(); ++current)
+        //{
+        //    if (*current == value)
+        //    {
+        //        Erase(current);
+        //    }
+        //}
 
+        iterator first = Begin();
+        iterator last = End();
+        while (first != last)
+        {
+            iterator next = first;
+            ++next; // get next node before do Erase.
+            if (*first == value)
+            {
+                Erase(first);
+            }
+            first = next;
+        }
     }
 
     // Reverses the order of the elements in the container. No references or iterators become invalidated.
     void Reverse()
     {
+        iterator first = Begin();
 
+        while (first != End())
+        {
+            iterator old = first;
+            Transfer(Begin(), old, ++first);//move each node before begin()==head's next node which means
+                                            // move each node at the front of this list.
+        }
     }
 
     // Removes all consecutive duplicate elements from the container.
     // Only the first element in each group of equal elements is left.
     void Unique()
     {
-
+        iterator first = Begin();
+        iterator last = End();
+        while (first != last)
+        {
+            iterator next = first;
+            ++next;
+            if (*first == *next)
+            {
+                // note first iterator is not changed/erased if it is equal to next.
+                // we just remove next, then continue with the loop.
+               Erase(next);
+            }
+            else
+            {
+                first = next;
+            }
+        }
     }
 
     // Sorts the elements in ascending order.
@@ -545,6 +634,35 @@ private:
         size -= count;
     }
 
+    // move elements from [first, last) at pos.
+    void Transfer(iterator pos, iterator first, iterator last)
+    {
+        if (first != last)
+        {
+            // unlink [first, last) from old list
+            NodePtr firstNode = first->nodePtr;
+            NodePtr endNode = last->nodePtr->prev;
+
+            NodePtr sourcePrevNode = firstNode->prev;
+            NodePtr SourceNextNode = last->nodePtr;
+
+            // unlink: reset old list
+            sourcePrevNode->next = SourceNextNode;
+            SourceNextNode->prev = sourcePrevNode;
+
+            // unlink reset to-be-moved node in old list and link to new list
+            NodePtr destPosNode = pos->nodePtr;
+            NodePtr destPrevNode = destPosNode->prev;
+
+            firstNode->prev = destPrevNode;
+            endNode->next = destPosNode;
+
+            // relink for new list
+            destPrevNode->next = firstNode;
+            destPosNode->prev = endNode;
+        }
+    }
+
 private:
     std::allocator<T> alloc;
     NodePtr head;// head node of list, make list meets the stl [) range.
@@ -593,6 +711,13 @@ void TestSTDList()
     lst4.insert(++lst4.begin(), 2, 8);
     PrintList(lst4);
 
+    lst4.unique();
+    PrintList(lst4);
+
+    // remove
+    lst4.remove(9);
+    PrintList(lst4);
+
     // test erase range
     lst4.erase(lst4.begin(), lst4.end());
     PrintList(lst4);
@@ -631,6 +756,13 @@ void TestMyList()
     PrintList(lst4);
 
     lst4.Insert(++lst4.Begin(), 2, 8);
+    PrintList(lst4);
+
+    lst4.Unique();
+    PrintList(lst4);
+
+    // remove
+    lst4.Remove(9);
     PrintList(lst4);
 
     // test erase range
