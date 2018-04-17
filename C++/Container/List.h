@@ -502,6 +502,7 @@ public:
     void Reverse()
     {
         iterator first = Begin();
+        ++first;// start from 2nd node
 
         while (first != End())
         {
@@ -537,7 +538,7 @@ public:
     // Sorts the elements in ascending order.
     void Sort()
     {
-
+        // TODO: quick sort
     }
 
 private:
@@ -640,18 +641,18 @@ private:
         if (first != last)
         {
             // unlink [first, last) from old list
-            NodePtr firstNode = first->nodePtr;
-            NodePtr endNode = last->nodePtr->prev;
+            NodePtr firstNode = first.nodePtr;
+            NodePtr endNode = last.nodePtr->prev;
 
             NodePtr sourcePrevNode = firstNode->prev;
-            NodePtr SourceNextNode = last->nodePtr;
+            NodePtr SourceNextNode = last.nodePtr;
 
             // unlink: reset old list
             sourcePrevNode->next = SourceNextNode;
             SourceNextNode->prev = sourcePrevNode;
 
             // unlink reset to-be-moved node in old list and link to new list
-            NodePtr destPosNode = pos->nodePtr;
+            NodePtr destPosNode = pos.nodePtr;
             NodePtr destPrevNode = destPosNode->prev;
 
             firstNode->prev = destPrevNode;
@@ -718,6 +719,14 @@ void TestSTDList()
     lst4.remove(9);
     PrintList(lst4);
 
+    // splice
+    lst4.splice(lst4.begin(), lst2);
+    PrintList(lst4);
+
+    // reverse
+    lst4.reverse();
+    PrintList(lst4);
+
     // test erase range
     lst4.erase(lst4.begin(), lst4.end());
     PrintList(lst4);
@@ -763,6 +772,14 @@ void TestMyList()
 
     // remove
     lst4.Remove(9);
+    PrintList(lst4);
+
+    // splice
+    lst4.Splice(lst4.Begin(), lst2);
+    PrintList(lst4);
+
+    // reverse
+    lst4.Reverse();
     PrintList(lst4);
 
     // test erase range
