@@ -2,13 +2,21 @@
 //         Test routine for reference
 //**************************************************************
 
-// one rule: lvalue reference bind to lvalue, rvalue reference bind to rvalue.
+// 1: lvalue reference bind to lvalue, rvalue reference bind to rvalue.
+// 2: function return value is lvalue if return type is reference, othewise it is rvalue since it will not have a name.
 
 // function has lvalue reference argument which can only bind to lvalue.
-int& func_lv(int&)
+// fuction return value is rvalue.
+int func_lv_1(int& x)
 {
-    int a = 1;
-    return a;
+    return x;
+}
+
+// function return value is reference, which is lvalue.
+// note return value is actually x, certainly has a name.
+int& func_lv_2(int& x)
+{
+    return x;
 }
 
 // function has rvalue reference argument which can only bind to rvalue.
@@ -27,23 +35,31 @@ int&& func_rv(int&&)
 void TestLvalueReference()
 {
     int a = 0;
-    func_lv(a);
-    //func_lv(1);// wrong
+    func_lv_1(a);
+    func_lv_1(a);
 
-    // why this works? func_lv(a) does not have a name, should it be rvalue?
-    // rvalue cannot bind to argument of func_lr.
-    func_lv(func_lv(a));
-    
+    //func_lv_1(a) = 1;// wrong, func_lv_1(a) is rvalue.
+    func_lv_2(a) = 1;// correct, func_lv_2(a) is lvalue.
+
+    //func_lv_1(1);// wrong
+    //func_lv_2(1);// wrong
+
+    //func_lv_1(func_lv_1(a));// wrong, func_lv_1(a) is rvalue.
+
+    // why this works? func_lv_2(a) does not have a name, should it be rvalue?
+    // No. func_lv_2() return type is reference, so it is rlvalue.
+    func_lv_1(func_lv_2(a));
+
     // this is certainly wrong.
-    //func_lv(std::move(func_lv(a)));
+    //func_lv_2(std::move(func_lv_2(a)));
 
     // wrong
-    //func_lv(std::forward<int>(func_lv(a)));
+    //func_lv_1(std::forward<int>(func_lv_2(a)));
 
-    func_lv(std::forward<int&>(func_lv(a)));
+    func_lv_1(std::forward<int&>(func_lv_2(a)));
 
     // wrong
-    //func_lv(std::forward<int&&>(func_lv(a)));
+    //func_lv_1(std::forward<int&&>(func_lv_2(a)));
 }
 
 void TestRvalueReference()
@@ -55,8 +71,8 @@ void TestRvalueReference()
     // correct, 1 is rvalue, can bind to int&& rvalue reference
     func_rv(1);
 
-    // why wrong? func_lv(a) is lvalue??????
-    //func_rv(func_lv(a));
+    func_rv(func_lv_1(a));// correct. func_lv_1 is rvalue.
+    //func_rv(func_lv_2(a));// wrong. func_lv_2 is lvalue.
 
     func_rv(func_rv(1));
 }
