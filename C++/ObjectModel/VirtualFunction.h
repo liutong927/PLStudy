@@ -6,6 +6,9 @@
 
 using namespace std;
 
+// runtime polymorphism represents addressing of a derived class object through 
+// a pointer or reference of a public base class.
+
 class Base
 {
 public:
@@ -15,6 +18,11 @@ public:
         cout << "Base func2 invoked." << endl;
     };
     virtual void func3(){};
+
+    ~Base()
+    {
+        cout << "Base deconstruct." << endl;
+    };
 };
 
 class Derived :public Base
@@ -23,6 +31,20 @@ public:
     virtual void func2()
     {
         cout << "Derived func2 invoked." << endl;
+    };
+
+    ~Derived()
+    {
+        cout << "Derived deconstruct." << endl;
+    };
+};
+
+class Derived2 :public Derived
+{
+public:
+    ~Derived2()
+    {
+        cout << "Derived2 deconstruct." << endl;
     };
 };
 
@@ -59,5 +81,19 @@ void TestVirtualFunction()
     // b is still base object. Calling b.func2() will still call Base::func2().
     b = d;
     b.func2();
+}
+
+void TestDeconstructor()
+{
+    // pB points to Base object, if dctor is non-virtual,
+    // then this Base object does not have its virtual function address.
+    // delete this object only calls ~Base().
+    Base* pB = new Derived;
+    delete pB;
+
+    // if dctor is non-virtual, delete Derived object only calls ~Derived() then its
+    // parent dctor ~Base().
+    Derived* pB2 = new Derived2;
+    delete pB2;
 }
 

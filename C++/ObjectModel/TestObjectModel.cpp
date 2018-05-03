@@ -7,5 +7,6 @@
 void main()
 {
     TestVirtualFunction();
+    TestDeconstructor();
 }
 
