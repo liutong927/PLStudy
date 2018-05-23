@@ -19,6 +19,16 @@ int& func_lv_2(int& x)
     return x;
 }
 
+int func_ref_arg(int& x)
+{
+    return x;
+}
+
+int func_const_ref_arg(const int& x)
+{
+    return x;
+}
+
 // function has rvalue reference argument which can only bind to rvalue.
 int&& func_rv(int&&)
 {
@@ -77,9 +87,20 @@ void TestRvalueReference()
     func_rv(func_rv(1));
 }
 
+void TestConstReference()
+{
+    //func_ref_arg(1); // wrong, only accept lvalue.
+    func_const_ref_arg(1);
+
+    int a = 1;
+    //int& b = 1;// wrong, cannot bind to rvalue.
+    const int& c = 1;// const lvalue reference can bind to both lvalue and rvalue.
+}
+
 void TestReference()
 {
     TestLvalueReference();
     TestRvalueReference();
+    TestConstReference();
 }
 
