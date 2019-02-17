@@ -71,6 +71,14 @@ void TestFunction()
 
     // test class member function, member function needs to bind object this
     // to transform function object accepts two arguments.
+	// Note: unlike static function which has unique function address, 
+	// which is a callable function object directly.
+	// to transfer a class member function to std::function, we need to 
+	// know its address, which need to do bind firstly. Bind need to know
+	// member function belongs to which class and which instance and also 
+	// its signature(because overload functions may exist for this class?).
+	// with these information, the class member function's address is determined
+	// and can be called.
     auto memFunc = bind(&SomeObject::MemFunc, SomeObject(), _1, _2);
     cout << "SomeObject::MemFunc(1,3): " << test(1, 3, memFunc) << endl;
 
